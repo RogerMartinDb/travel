@@ -1,6 +1,6 @@
 export { findBestServcies, destinationNames }
 
-const destinations = {}
+let destinations = {}
 
 function destinationNames(stops) {
    const names = new Set()
@@ -14,6 +14,8 @@ function destinationNames(stops) {
 
 function findBestServcies(localStops) {
   if (!localStops || !localStops.forEach) return
+
+  destinations = {}
 
   return Promise.allSettled(
     localStops.map(stop => getDeparturesFor(stop).then(processStopDepartures))
@@ -64,8 +66,6 @@ function getDeparturesFor(stop) {
 function processStopDepartures({ stop, doc }) {
   const buses = doc.querySelectorAll("tr");
 
-  clearStop(stop)
-
   for (let i = 1; i < buses.length; ++i) {
     let cells = buses[i].children;
 
@@ -87,13 +87,6 @@ function registerDeparture(departure) {
   destinations[departure.destination][departure.service] ||= {}
   destinations[departure.destination][departure.service][departure.stop.stopNumber] ||= []
   destinations[departure.destination][departure.service][departure.stop.stopNumber].push(departure)
-}
-
-function clearStop(stop) {
-  Object.values(destinations).forEach(destination =>
-    Object.values(destination).forEach(service =>
-      delete service[stop.stopNumber]
-    ))
 }
 
 class DueStringParser{
