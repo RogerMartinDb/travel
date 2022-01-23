@@ -1,0 +1,18 @@
+create proper vue components
+  fix xhr and sleep
+order by time
+update departures automatically
+memoise walking distances, parsed stops, etc.
+update location as device updates
+
+
+handle stops.txt using wrangler csv-loader
+add trains
+test luas
+readme, include notes on how to refresh station list
+  https://developer.nationaltransport.ie/api-details#api=gtfsr&operation=gtfsr
+get realtime for busses
+better DNS
+move to own CF account
+add tests
+remove secrets; reset repo; publish on github
