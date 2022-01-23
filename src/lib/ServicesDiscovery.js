@@ -28,7 +28,7 @@ function closestStops() {
     for (const service in destination) {
       const bestStopDepartures =
         Object.values(destination[service])
-          .sort((a, b) => a[0].stop.walking.distance.value - b[0].stop.walking.distance.value)
+          .sort((a, b) => a[0].stop.distance - b[0].stop.distance)
         [0]
 
       if (bestStopDepartures) {

@@ -24,6 +24,17 @@ function toggleDestination(destinationName, on) {
 const haveLocation = computed(() => location.value.longitude)
 const haveDestinations = computed(() => destinations.value.length)
 
+const latLongString = ref("")
+function useLatLongString() {
+  const [latitude, longitude] = latLongString.value.split(',').map(a => Number.parseFloat(a))
+
+  if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+    location.value = { latitude, longitude }
+  }
+}
+
+
+
 </script>
 
 <template>
@@ -31,6 +42,7 @@ const haveDestinations = computed(() => destinations.value.length)
     <div v-if="!haveLocation">waiting for location...</div>
     <div v-if="haveLocation && !haveDestinations">looking for services...</div>
     <h1 v-if="haveDestinations">What direction are you heading?</h1>
+    <input v-model="latLongString" /><input type="button" value="move to" @click="useLatLongString" />
     <div id="destinations">
       <Destination
         v-for="destination in destinations"
