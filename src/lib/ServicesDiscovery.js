@@ -3,7 +3,7 @@ export { findBestServcies, destinationNames }
 let destinations = {}
 
 function destinationNames(stops) {
-   const names = new Set()
+  const names = new Set()
 
   for (const stop in stops) {
     stops[stop].departures.forEach(departure => names.add(departure.destination))
@@ -18,9 +18,30 @@ function findBestServcies(localStops) {
   destinations = {}
 
   return Promise.allSettled(
-    localStops.map(stop => getDeparturesFor(stop).then(processStopDepartures))
+    localStops.filter(stop => stop.type != 'train')
+      .map(stop => getDeparturesFor(stop)
+        .then(processStopDepartures))
+      .concat(
+        localStops.filter(stop => stop.type == 'train')
+          .map(stop => getDeparturesForStation(stop)
+            .then(processStationDepartures))
+      )
   )
-  .then(_ => closestStops())
+    .then(_ => closestStops())
+}
+
+function getDeparturesForStation(stop) {
+  console.log(`getDeparturesForStation ${JSON.stringify(stop)}`)
+  return new Promise((resolve, reject) => {
+    let xhr = new XMLHttpRequest()
+    xhr.responseType = "document"
+    xhr.open('GET', `https://transport.rmartin.workers.dev/realtime/realtime.asmx/getStationDataByCodeXML_WithNumMins?StationCode=${stop.stopNumber}&NumMins=60`, true)
+    xhr.onload = () => {
+      const doc = xhr.responseXML
+      resolve({ stop, doc })
+    }
+    xhr.send()
+  })
 }
 
 function closestStops() {
@@ -82,6 +103,26 @@ function processStopDepartures({ stop, doc }) {
   }
 }
 
+function processStationDepartures({ stop, doc }) {
+  console.log(`processing stn deparures for ${JSON.stringify(stop)}`)
+  let trains = doc.getElementsByTagName('objStationData');
+
+  for (let i = 0; i < trains.length; ++i) {
+    let train = trains[i];
+
+    const dueParser = new DueStringParser(train.querySelector("Expdepart").textContent)
+
+    registerDeparture({
+      stop: stop,
+      service: train.querySelector("Traintype").textContent,
+      destination: train.querySelector('Destination').textContent,
+      dueString: dueParser.dueRelative,
+      dueMinutes: dueParser.minutes,
+      dueAbsolute: dueParser.dueAbsolute
+    })
+  }
+}
+
 function registerDeparture(departure) {
   destinations[departure.destination] ||= {}
   destinations[departure.destination][departure.service] ||= {}
@@ -89,23 +130,22 @@ function registerDeparture(departure) {
   destinations[departure.destination][departure.service][departure.stop.stopNumber].push(departure)
 }
 
-class DueStringParser{
-  constructor(dueString, now = new Date()){
+class DueStringParser {
+  constructor(dueString, now = new Date()) {
     now.setSeconds(0);
 
     dueString = dueString.trim()
 
-    if (dueString === "Due")
-    {
-        this.minutes = 0;
-        this.dueRelative = "Due";
-        this.dueAbsolute = this.timeString(now);
-        return;
+    if (dueString === "Due") {
+      this.minutes = 0;
+      this.dueRelative = "Due";
+      this.dueAbsolute = this.timeString(now);
+      return;
     }
 
     let match = dueString.match(/^(\d\d):(\d\d)$/);
 
-    if(match){
+    if (match) {
       let hour = parseInt(match[1], 10);
       let minute = parseInt(match[2], 10);
 
@@ -114,7 +154,7 @@ class DueStringParser{
       if (now.getHours() - hour > 12)
         dueTime.setDate(dueTime.getDate() + 1);  // tomorrow
 
-      let minutes = Math.trunc((dueTime - now)/1000/60);
+      let minutes = Math.trunc((dueTime - now) / 1000 / 60);
       if (minutes < 0) minutes = 0;
 
       this.minutes = minutes;
@@ -126,15 +166,14 @@ class DueStringParser{
 
     match = dueString.match(/(\d+) min/);
 
-    if (match)
-    {
-        this.minutes = parseInt(match[1], 10);
-        let dueTime = now;
-        dueTime.setMinutes(now.getMinutes() + this.minutes);
-        this.dueAbsolute = this.timeString(dueTime);
-        this.dueRelative = `${this.minutes} min`;
+    if (match) {
+      this.minutes = parseInt(match[1], 10);
+      let dueTime = now;
+      dueTime.setMinutes(now.getMinutes() + this.minutes);
+      this.dueAbsolute = this.timeString(dueTime);
+      this.dueRelative = `${this.minutes} min`;
 
-        return;
+      return;
     }
 
     this.minutes = 0;
@@ -143,9 +182,9 @@ class DueStringParser{
 
   }
 
-  timeString(date){
+  timeString(date) {
     return ("0" + date.getHours()).slice(-2) + ":" +
-            ("0" + date.getMinutes()).slice(-2);
+      ("0" + date.getMinutes()).slice(-2);
   }
 
 }

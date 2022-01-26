@@ -7,7 +7,7 @@ import trackLocation from './Location';
 import Destination from './Destination.vue';
 import Stop from './Stop.vue';
 
-const limitKm = 0.5
+const limitKm = 0.6
 const location = trackLocation()
 const [localStops] = useAsyncComputed(_ => locateStopsNear(location.value, limitKm))
 const [services] = useAsyncComputed(_ => findBestServcies(localStops.value))
@@ -32,9 +32,6 @@ function useLatLongString() {
     location.value = { latitude, longitude }
   }
 }
-
-
-
 </script>
 
 <template>
@@ -42,7 +39,10 @@ function useLatLongString() {
     <div v-if="!haveLocation">waiting for location...</div>
     <div v-if="haveLocation && !haveDestinations">looking for services...</div>
     <h1 v-if="haveDestinations">What direction are you heading?</h1>
-    <input v-model="latLongString" /><input type="button" value="move to" @click="useLatLongString" />
+    <template v-if="false">
+      <input v-model="latLongString" />
+      <input type="button" value="move to" @click="useLatLongString" />
+    </template>
     <div id="destinations">
       <Destination
         v-for="destination in destinations"

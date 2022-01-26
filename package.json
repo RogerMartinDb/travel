@@ -9,7 +9,9 @@
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.12.12",
-    "vue": "^3.2.25"
+    "stream": "^0.0.2",
+    "vue": "^3.2.25",
+    "xml-js": "^1.6.11"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.0.0",
