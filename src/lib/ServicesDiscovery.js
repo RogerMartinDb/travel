@@ -1,11 +1,12 @@
+import { stop } from "vue"
 import { allStops, canonicalName } from "./StopsDB"
 import circle from "./surface-of-earth"
 
-export { findBestServcies, destinationNames }
+export { findBestServcies, listDestinations }
 
 let destinations = {}
 
-async function destinationNames(stops, location) {
+async function listDestinations(stops, location) {
   const names = new Set()
 
   for (const stop in stops) {
@@ -18,7 +19,7 @@ async function destinationNames(stops, location) {
     result.push(addLocation(_allStops, name, location))
   }
 
-  return result
+  return result.sort((a, b) => b.location.latitude - a.location.latitude)
 }
 
 function addLocation(_allStops, name, location) {

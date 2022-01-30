@@ -2,7 +2,7 @@
 import { computed, reactive, ref } from 'vue';
 import useAsyncComputed from './use-async-computed';
 import locateStopsNear from '../lib/LocalStopDiscovery'
-import { findBestServcies, destinationNames } from '../lib/ServicesDiscovery'
+import { findBestServcies, listDestinations } from '../lib/ServicesDiscovery'
 import trackLocation from './Location';
 import Destination from './Destination.vue';
 import Stop from './Stop.vue';
@@ -11,7 +11,7 @@ const limitKm = 0.6
 const location = trackLocation()
 const [localStops] = useAsyncComputed(_ => locateStopsNear(location.value, limitKm))
 const [services] = useAsyncComputed(_ => findBestServcies(localStops.value))
-const [destinations] = useAsyncComputed(() => destinationNames(services.value, location.value))
+const [destinations] = useAsyncComputed(() => listDestinations(services.value, location.value))
 const selectedDestinations = ref(new Set())
 function toggleDestination(destinationName, on) {
   if (on) {
