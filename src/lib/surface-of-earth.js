@@ -15,6 +15,19 @@ export default function circle(location, radius) {
     return distance(location, point)
   }
 
+  function bearing(point) {
+    // https://www.movable-type.co.uk/scripts/latlong.html
+
+    const [φ1, λ1] = [deg2rad(location.latitude), deg2rad(location.longitude)]
+    const [φ2, λ2] = [deg2rad(point.latitude), deg2rad(point.longitude)]
+
+    const y = Math.sin(λ2-λ1) * Math.cos(φ2)
+    const x = Math.cos(φ1)*Math.sin(φ2) -
+              Math.sin(φ1)*Math.cos(φ2)*Math.cos(λ2-λ1)
+    const θ = Math.atan2(y, x)
+    return (θ*180/Math.PI + 360) % 360; // in degrees
+  }
+
   function distance(a, b) {
     const lat1 = deg2rad(a.latitude)
     const lat2 = deg2rad(b.latitude)
@@ -49,5 +62,5 @@ export default function circle(location, radius) {
     return rad * (180 / Math.PI)
   }
 
-  return { contains, distanceTo, location }
+  return { contains, distanceTo, location, bearing }
 }

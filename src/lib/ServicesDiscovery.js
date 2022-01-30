@@ -1,15 +1,47 @@
+import { allStops, canonicalName } from "./StopsDB"
+import circle from "./surface-of-earth"
+
 export { findBestServcies, destinationNames }
 
 let destinations = {}
 
-function destinationNames(stops) {
+async function destinationNames(stops, location) {
   const names = new Set()
 
   for (const stop in stops) {
     stops[stop].departures.forEach(departure => names.add(departure.destination))
   }
 
-  return Array.from(names).sort()
+  const result = []
+  const _allStops = await allStops()
+  for (const name of names) {
+    result.push(addLocation(_allStops, name, location))
+  }
+
+  return result
+}
+
+function addLocation(_allStops, name, location) {
+  let destinationLocation = null
+  let bearing = null
+
+  const matches = _allStops.filter(stop => stop.canonicalName == canonicalName(name))
+  if (matches.length > 0) {
+    destinationLocation = matches[0].location
+    bearing = calculateBearing(location, destinationLocation)
+  }
+
+  return { name, location: destinationLocation, bearing }
+}
+
+function calculateBearing(origin, point) {
+  if (point.latitude == null || point.longitude == null) {
+    return null
+  }
+
+  const myCircle = new circle(origin, 1)
+
+  return myCircle.bearing(point)
 }
 
 function findBestServcies(localStops) {
