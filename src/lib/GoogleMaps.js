@@ -6,7 +6,7 @@ export {
 import { Loader } from "@googlemaps/js-api-loader"
 
 const loader = new Loader({
-  apiKey: "AIzaSyAXu6sMFeiYSQDPXaR5IvOcgOmIjcO0Wq0",
+  apiKey: 'AIzaSyD0CqWcXsdqKkGDh9EQC0a5DYd8at6-wn4',
   version: "weekly"
 });
 
